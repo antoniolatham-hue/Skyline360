@@ -1,0 +1,53 @@
+{
+  "actions": [
+    {
+      "name": "getComplianceStatus",
+      "description": "Get compliance status from Resprovisory",
+      "method": "GET",
+      "url": "https://resprovisory.com/api/compliance?user_id={{user_id}}",
+      "parameters": {
+        "user_id": {
+          "type": "string",
+          "description": "The user's unique ID"
+        }
+      }
+    },
+    {
+      "name": "checkVitals",
+      "description": "Check vitals for a specific patient",
+      "method": "GET",
+      "url": "https://resprovisory.com/api/vitals?patient_id={{patient_id}}",
+      "parameters": {
+        "patient_id": {
+          "type": "string",
+          "description": "The patient's ID"{
+  "actions": [
+    {
+      "name": "getComplianceStatus",
+      "description": "Get compliance status from Resprovisory",
+      "method": "GET",
+      "url": "https://resprovisory.com/api/compliance?user_id={{user_id}}",
+      "parameters": {
+        "user_id": {
+          "type": "string",
+          "description": "The user's unique ID"
+        }
+      }
+    },
+    {
+      "name": "checkVitals",
+      "description": "Check vitals for a specific patient",
+      "method": "GET",
+      "url": "https://resprovisory.com/api/vitals?patient_id={{patient_id}}",
+      "parameters": {
+        "patient_id": {
+          "type": "string",
+          "description": "The patient's ID"
+        }
+      }
+    }
+  ]
+}
+    }
+  ]
+}
