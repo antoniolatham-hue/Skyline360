@@ -1,0 +1,48 @@
+{
+  "actions": [
+    {
+      "name": "getComplianceStatus",
+      "description": "Get the compliance status of a patient from Skyline360",
+      "method": "GET",
+      "url": "https://skyline360.com/api/compliance?user_id={{user_id}}",
+      "parameters": {
+        "user_id": {
+          "type": "string",
+          "description": "The unique ID of the patient"
+        }
+      }
+    },
+    {
+      "name": "checkVitals",
+      "description": "Retrieve real-time vitals for a patient in ICU",
+      "method": "GET",
+      "url": "https://skyline360.com/api/vitals?patient_id={{patient_id}}",
+      "parameters": {
+        "patient_id": {
+          "type": "string",
+          "description": "The ID of the patient"
+        }
+      }
+    },
+    {
+      "name": "sendAlert",
+      "description": "Send an alert to ICU team for critical patient condition",
+      "method": "POST",
+      "url": "https://skyline360.com/api/alerts",
+      "parameters": {
+        "patient_id": {
+          "type": "string",
+          "description": "Patient ID"
+        },
+        "alert_type": {
+          "type": "string",
+          "description": "Type of alert (e.g., cardiac, respiratory, neuro)"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes from the AI"
+        }
+      }
+    }
+  ]
+}
