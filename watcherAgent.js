@@ -15,8 +15,8 @@ async function processFile(filePath) {
   try {
     const content = await fs.promises.readFile(filePath, 'utf8');
 
-    if (content.includes('console.log("error') || content.includes('fixMe')) {
-      const fixedContent = content.replace(/console\.log\("error.*"\);?/g, '');
+    if (content.includes('console.log("error")') || content.includes('fixMe')) {
+      const fixedContent = content.replace(/console\.log\("error"\);?/g, '');
       await fs.promises.writeFile(filePath, fixedContent, 'utf8');
 
       broadcast(`✅ Auto-fixed issue in ${path.basename(filePath)}`);
