@@ -21,6 +21,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Ensure liveMonitor.json exists
+        run: |
+          mkdir -p skylink360
+          echo '{"app": "SkyLink360", "status": "ok"}' > skylink360/liveMonitor.json
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -28,21 +33,14 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        working-directory: skylink360-app
-        run: npm ci
+        working-directory: skylink360
+        run: npm install
 
-      - name: Build app
-        working-directory: skylink360-app
+      - name: Build project
+        working-directory: skylink360
         run: npm run build
 
-      - name: Deploy app
-        working-directory: skylink360-app
-        run: npm run deploy
-
-      - name: Trigger MasterLiveViewing sync
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          repo: antoniolatham-hue/MasterLiveViewing
-          workflow: sync-skylink360.yml
-          ref: main
-          token: ${{ secrets.WORKFLOW_TOKEN }}
+      - name: Deploy to Production
+        run: |
+          echo "Deploying..."
+          # Add your deployment command here
