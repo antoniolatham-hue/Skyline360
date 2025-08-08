@@ -3,6 +3,8 @@ name: Ship to Prod (all-in-one)
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -57,3 +59,44 @@ jobs:
       - name: Note if sync trigger failed
         if: ${{ failure() }}
         run: echo "MasterLiveViewing sync trigger failed, but build/deploy completed."
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Your existing build/deploy steps go here
+          - name: Deploy app
+      working-directory: skylink360-app
+      run: |
+        npm ci
+        npm run build
+        npm run deploy
+
+           - name: Trigger MasterLiveViewing workflow
+      uses: benc-uk/workflow-dispatch@v1
+      with:
+        workflow: sync-skylink360.yml
+        ref: main
+        token: ${{ secrets.WORKFLOW_TOKEN }} 
+      
+      # your deploy commands here
+
+    - name: Trigger MasterLiveViewing workflow
+      uses: benc-uk/workflow-dispatch@v1
+      with:
+        workflow: masterliveviewing.yml
+        ref: main
+        token: ${{ secrets.WORKFLOW_TOKEN }}
+        run: npm run deploy
+
+      # NEW: Trigger MasterLiveViewing
+      - name: Trigger MasterLiveViewing Workflow
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/<your-username>/<your-repo>/actions/workflows/masterliveviewing.yml/dispatches \
+            -d '{"ref":"main"}'
