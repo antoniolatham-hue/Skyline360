@@ -21,26 +21,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Ensure liveMonitor.json exists
-        run: |
-          mkdir -p skylink360
-          echo '{"app": "SkyLink360", "status": "ok"}' > skylink360/liveMonitor.json
-
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: "20"
           cache: npm
 
       - name: Install dependencies
-        working-directory: skylink360
         run: npm install
 
-      - name: Build project
-        working-directory: skylink360
+      - name: Build
         run: npm run build
 
-      - name: Deploy to Production
-        run: |
-          echo "Deploying..."
-          # Add your deployment command here
+      - name: Deploy
+        run: echo "🚀 Deploy step goes here"
