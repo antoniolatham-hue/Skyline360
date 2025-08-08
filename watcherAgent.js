@@ -1,61 +1,62 @@
-// watcherAgent.js — AI Optimized File Watcher with Auto-Fix & Performance Tuning
-
 const fs = require('fs');
 const path = require('path');
-const chokidar = require('chokidar');
 
-// Debounce map to avoid repeated triggers
+let chokidar;
+try {
+  chokidar = require('chokidar');
+} catch {
+  console.warn('⚠️ chokidar not found, using fs.watch fallback.');
+}
+
+const WATCH_DIR = path.join(__dirname, 'watched');
 const debounceMap = new Map();
 
-// File watcher directory
-const WATCH_DIR = path.join(__dirname, 'watched'); // <-- change if needed
+function removeErrorLogs(content) {
+  return content.replace(/console\.log\(["']error.*?["']\);?\n?/gi, '');
+}
 
-// Async file processing
 async function processFile(filePath) {
   try {
     const content = await fs.promises.readFile(filePath, 'utf8');
-
-    if (content.includes('console.log("error') || content.includes('fixMe')) {
-      const fixedContent = content.replace(/console\.log\("error.*"\);?/g, '');
-      await fs.promises.writeFile(filePath, fixedContent, 'utf8');
-
-      broadcast(`✅ Auto-fixed issue in ${path.basename(filePath)}`);
+    if (/console\.log\(["']error/i.test(content)) {
+      const fixed = removeErrorLogs(content);
+      await fs.promises.writeFile(filePath, fixed, 'utf8');
+      console.log(`✅ Auto-fixed error logs in ${path.basename(filePath)}`);
     }
   } catch (err) {
-    console.error(`❌ Error processing file ${filePath}:`, err.message);
+    console.error(`❌ Error processing file ${filePath}: ${err.message}`);
   }
 }
 
-// Broadcast safely
-function broadcast(message) {
-  console.log('📡 Broadcast:', message);
-}
-
-// Debounce file changes
 function debounceProcess(filePath) {
-  clearTimeout(debounceMap.get(filePath));
-  debounceMap.set(filePath, setTimeout(() => {
+  if (debounceMap.has(filePath)) clearTimeout(debounceMap.get(filePath));
+  const t = setTimeout(() => {
     processFile(filePath);
-  }, 300));
+    debounceMap.delete(filePath);
+  }, 500);
+  debounceMap.set(filePath, t);
 }
 
-// File watcher setup
-const watcher = chokidar.watch(WATCH_DIR, {
-  persistent: true,
-  ignoreInitial: true,
-  depth: 1
-});
+function startWatching() {
+  if (chokidar) {
+    const watcher = chokidar.watch(WATCH_DIR, { persistent: true, ignoreInitial: false });
+    watcher.on('add', debounceProcess);
+    watcher.on('change', debounceProcess);
+    console.log(`👀 Watching with chokidar: ${WATCH_DIR}`);
+  } else {
+    fs.watch(WATCH_DIR, (eventType, filename) => {
+      if (!filename) return;
+      if (eventType === 'change' || eventType === 'rename') {
+        debounceProcess(path.join(WATCH_DIR, filename));
+      }
+    });
+    console.log(`👀 Watching with fs.watch (fallback): ${WATCH_DIR}`);
+  }
+}
 
-watcher.on('change', (filePath) => {
-  if (!filePath.endsWith('.js')) return;
-  debounceProcess(filePath);
-});
+if (!fs.existsSync(WATCH_DIR)) {
+  fs.mkdirSync(WATCH_DIR, { recursive: true });
+  console.log(`🗂 Created watch directory: ${WATCH_DIR}`);
+}
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-  console.log('🛑 Shutting down... closing file watchers.');
-  watcher.close();
-  process.exit();
-});
-
-console.log(`🚀 AI Watcher running at: ${WATCH_DIR}`);
+startWatching();
