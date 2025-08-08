@@ -1,0 +1,11 @@
+{
+  "lint": {
+    "files": {
+      "include": ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
+      "exclude": [
+        "watcherAgent.js",
+        "Skyline360/**/watcherAgent.js"
+      ]
+    }
+  }
+}
