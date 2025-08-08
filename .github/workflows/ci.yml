@@ -19,7 +19,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -30,22 +30,30 @@ jobs:
         run: npm ci
         working-directory: skylink360-app
 
-      - name: Build
+      - name: Build project
         run: npm run build
         working-directory: skylink360-app
 
-      # Optional: Upload build artifacts
-      - name: Upload production-ready build
-        uses: actions/upload-artifact@v4
-        with:
-          name: skylink360-dist
-          path: skylink360-app/dist
+      # --- Optional Vercel deploy (comment out if not using) ---
+      # requires repo secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
+      - name: Deploy to Vercel (optional)
+        if: ${{ secrets.VERCEL_TOKEN != '' }}
+        run: npx vercel --prod --yes --token="${{ secrets.VERCEL_TOKEN }}" --scope="${{ secrets.VERCEL_ORG_ID }}"
+        working-directory: skylink360-app
 
-      # Optional: Deploy to Vercel (needs secrets)
-      # - name: Deploy to Vercel
-      #   uses: amondnet/vercel-action@v25
-      #   with:
-      #     vercel-token: ${{ secrets.VERCEL_TOKEN }}
-      #     vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-      #     vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-      #     working-directory: skylink360-app
+      # --- Always try to trigger MasterLiveViewing sync, but NEVER fail build if it errors ---
+      - name: Trigger MasterLiveViewing sync
+        uses: benc-uk/workflow-dispatch@v1
+        continue-on-error: true          # <-- fail-safe
+        with:
+          # The workflow file name in MasterLiveViewing (adjust if different)
+          workflow: sync-skylink360.yml
+          # Target repo to trigger
+          repo: antoniolatham-hue/MasterLiveViewing
+          ref: main
+          token: ${{ secrets.WORKFLOW_PAT }}   # see notes below
+
+      # Optional: show a friendly log if the dispatch failed but build succeeded
+      - name: Note if sync trigger failed
+        if: ${{ failure() }}
+        run: echo "MasterLiveViewing sync trigger failed, but build/deploy completed."
