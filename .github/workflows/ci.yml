@@ -21,12 +21,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
-          cache-dependency-path: skylink360-app/package-lock.json
+          cache: npm
 
       - name: Install dependencies
         working-directory: skylink360-app
@@ -43,6 +42,7 @@ jobs:
       - name: Trigger MasterLiveViewing sync
         uses: benc-uk/workflow-dispatch@v1
         with:
+          repo: antoniolatham-hue/MasterLiveViewing
           workflow: sync-skylink360.yml
           ref: main
           token: ${{ secrets.WORKFLOW_TOKEN }}
