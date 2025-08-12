@@ -1,0 +1,2 @@
+run = "cd skylink360-app && npm start"
+language = "nodejs"
