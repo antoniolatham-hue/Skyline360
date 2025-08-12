@@ -1,2 +1,8 @@
-run = "cd skylink360-app && npm start"
-language = "nodejs"
+run = "bash -lc 'cd skylink360-app && npm start'"
+
+[nix]
+channel = "stable-23_05"
+
+[deployment]
+buildCommand = "bash -lc 'cd skylink360-app && npm install'"
+command      = "bash -lc 'cd skylink360-app && npm start'"
