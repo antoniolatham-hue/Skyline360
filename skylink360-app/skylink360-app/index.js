@@ -31,16 +31,3 @@ app.listen(PORT, () => {
   console.log(`SkyLink360 server running on port ${PORT}`);
 });
 
-{
-  "name": "skylink360-app",
-  "version": "1.0.0",
-  "description": "SkyLink360 App",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "axios": "^1.6.8"
-  }
-}
