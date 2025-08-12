@@ -1,37 +1,58 @@
-name: Ship to Prod (all-in-one)
+name: Global Push & Deploy
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+    branches: [ main ]
   workflow_dispatch:
+  schedule:
+    - cron: "*/30 * * * *"   # every 30 minutes
 
 permissions:
-  contents: write
-
-concurrency:
-  group: ship-${{ github.ref }}
-  cancel-in-progress: true
+  contents: write            # allow committing/pushing changes
 
 jobs:
-  build-and-deploy:
+  push-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
         with:
-          node-version: "20"
-          cache: npm
+          token: ${{ secrets.GHToken }}   # <-- must match your secret name
 
-      - name: Install dependencies
-        run: npm install
+      - name: Configure git author
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
 
-      - name: Build
-        run: npm run build
+      - name: Find liveMonitor.json
+        id: find_json
+        run: |
+          FILE="$(git ls-files | grep -Ei '(^|/)liveMonitor\.json$' || true)"
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
 
-      - name: Deploy
-        run: echo "🚀 Deploy step goes here"
+      - name: Copy or create liveMonitor.json -> masterlive/data
+        run: |
+          mkdir -p masterlive/data
+          if [ -n "${{ steps.find_json.outputs.file }}" ]; then
+            echo "Found: ${{ steps.find_json.outputs.file }}"
+            cp "${{ steps.find_json.outputs.file }}" masterlive/data/liveMonitor.json
+          else
+            echo "liveMonitor.json not found. Creating a blank one."
+            echo '{}' > masterlive/data/liveMonitor.json
+          fi
+
+      - name: Commit & push if there are changes
+        run: |
+          if ! git diff --quiet; then
+            git add -A
+            git commit -m "Auto: sync liveMonitor.json and deploy [skip ci]"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+
+      - name: Deploy (add your commands here)
+        run: |
+          # Example placeholder — replace with your real deploy steps
+          echo "🚀 Deploy step placeholder (add your deploy commands)"
